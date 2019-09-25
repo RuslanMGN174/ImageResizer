@@ -31,7 +31,8 @@ public class Main {
                     continue;
                 }
 
-                BufferedImage newImage = Scalr.resize(image, targetSize);
+                BufferedImage newImage = Scalr.resize(image, Scalr.Method.SPEED, targetSize * 3);
+                newImage = Scalr.resize(newImage, Scalr.Method.ULTRA_QUALITY, targetSize, Scalr.OP_ANTIALIAS);
 
                 File newFile = new File(dstFolder + "/" + file.getName());
                 ImageIO.write(newImage, "jpg", newFile);
