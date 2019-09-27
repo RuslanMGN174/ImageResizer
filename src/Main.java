@@ -3,26 +3,49 @@ import org.imgscalr.Scalr;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class Main {
     private static String srcFolder = "C:/Users/knyazev.r/Desktop/Dexter";
     private static String dstFolder = "C:/Users/knyazev.r/Desktop/New";
-    private static int processors = Runtime.getRuntime().availableProcessors();
+    private static File srcDir = new File(srcFolder);
+    private static File[] files = srcDir.listFiles();
+
+    private static int coreCount = Runtime.getRuntime().availableProcessors();
 
     public static void main(String[] args) {
 
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(processors);
-        executor.execute(() -> {
-            imageResize(srcFolder, dstFolder, 300);
-        });
+        List<File[]> filesList = new ArrayList<>();
+
+        int start = 0;
+        int end = files.length / coreCount;
+        int remains = files.length;
+
+        for (int i = 0; i < coreCount; i++) {
+            filesList.add(Arrays.copyOfRange(files, start, end));
+            start = end;
+            int arrayLength = filesList.get(i).length;
+            remains -= arrayLength;
+            if (remains > arrayLength && remains < arrayLength *2 ) {
+                end += arrayLength + files.length % coreCount;
+            } else {
+                end += arrayLength;
+            }
+        }
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        filesList.forEach(files1 -> executor.execute(() -> imageResize(files1, dstFolder, 300)));
         executor.shutdown();
+
     }
 
-    private static void imageResize(String srcFolder, String dstFolder, int targetSize) {
-        File srcDir = new File(srcFolder);
-        File[] files = srcDir.listFiles();
+
+    private static void imageResize(File[] files, String dstFolder, int targetSize) {
 
         try {
             for (File file : files) {
