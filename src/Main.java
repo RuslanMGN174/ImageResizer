@@ -37,7 +37,7 @@ public class Main {
             }
         }
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newFixedThreadPool(10);
 
         filesList.forEach(files1 -> executor.execute(() -> imageResize(files1, dstFolder, 300)));
         executor.shutdown();
